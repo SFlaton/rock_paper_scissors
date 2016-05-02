@@ -32,6 +32,7 @@ class App extends React.Component {
           component.setState({
             currentGame: game
           });
+          component.determineWinner();
         }
       });
     }
@@ -79,8 +80,60 @@ class App extends React.Component {
     };
   }
 
+  determineWinner() {
+    let moveOne = this.state.currentGame.playerOneMove;
+    let moveTwo = this.state.currentGame.playerTwoMove;
+    if (moveOne !== null && moveTwo !== null) {
+      if (moveOne === moveTwo) {
+        this.storeWinner("draw");
+      }
+
+      if (moveOne === "Rock") {
+        if (moveTwo === "Scissors") {
+          this.storeWinner(this.state.currentGame.playerOne);
+        }
+
+        if (moveTwo === "Paper") {
+          this.storeWinner(this.state.currentGame.playerTwo);
+        }
+      }
+
+      if (moveOne === "Paper") {
+        if (moveTwo === "Rock") {
+          this.storeWinner(this.state.currentGame.playerOne);
+        }
+
+        if (moveTwo === "Scissors") {
+          this.storeWinner(this.state.currentGame.playerTwo);
+        }
+      }
+
+      if (moveOne === "Scissors") {
+        if (moveTwo === "Rock") {
+          this.storeWinner(this.state.currentGame.playerTwo);
+        }
+
+        if (moveTwo === "Paper") {
+          this.storeWinner(this.state.currentGame.playerOne);
+        }
+      }
+    }
+  }
+
+  storeWinner(winner) {
+    this.games.save(this.state.currentGame, { winner: winner });
+  }
+
   makeMove(move) {
     console.log(move);
+    if (this.state.currentGame.playerOne === this.state.currentPlayer) {
+      this.games.save(this.state.currentGame, { playerOneMove: move });
+    }
+
+    if (this.state.currentGame.playerTwo === this.state.currentPlayer) {
+      this.games.save(this.state.currentGame, { playerTwoMove: move });
+    }
+
     this.setState({
       playerMove: move
     });
@@ -105,15 +158,19 @@ class App extends React.Component {
 
         { this.state.currentGame !== null &&
           <div className="game">
-          <p>Player one: {this.state.currentGame.playerOne}</p>
-          <p>Player two: {this.state.currentGame.playerTwo}</p>
+          <p>Player one: {this.state.currentGame.playerOne} ({this.state.currentGame.playerOneMove})</p>
+          <p>Player two: {this.state.currentGame.playerTwo} ({this.state.currentGame.playerTwoMove})</p>
 
-          <div>
+          { this.state.currentGame.winner === null && <div>
             <h2>{this.state.playerMove}</h2>
             <PlayerMoveComponent move="Rock" onClick={this.makeMove.bind(this)} />
             <PlayerMoveComponent move="Paper" onClick={this.makeMove.bind(this)} />
             <PlayerMoveComponent move="Scissors" onClick={this.makeMove.bind(this)} />
-          </div>
+          </div> }
+
+          { this.state.currentGame.winner !== null && <div>
+            <h1>{this.state.currentGame.winner} won!</h1>
+          </div> }
         </div>}
       </div>
     );
