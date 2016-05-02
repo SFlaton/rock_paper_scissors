@@ -8,7 +8,8 @@ class App extends React.Component {
       super();
 
       this.state = {
-        games: []
+        games: [],
+        currentGame: null
       };
     }
 
@@ -44,14 +45,23 @@ class App extends React.Component {
       }
     }
 
+    selectGame(gameId) {
+      this.games.getResource({ _id: gameId });
+      console.log(gameId);
+      this.setState({
+        currentGame: gameId
+      });
+    }
+
     render() {
-        return (
-            <div style={this.containerStyles()}>
-              <h1 style={this.headerStyle()}>Rock Paper Scissors</h1>
-              <NewGameComponent onCreate={this.createGame.bind(this)}/>
-              <GameListComponent games={this.state.games} />
-            </div>
-        );
+      console.log(this.state);
+      return (
+          <div style={this.containerStyles()}>
+            <h1 style={this.headerStyle()}>Rock Paper Scissors</h1>
+            <NewGameComponent onCreate={this.createGame.bind(this)}/>
+            <GameListComponent games={this.state.games} onSelect={this.selectGame.bind(this)}/>
+          </div>
+      );
     }
 }
 
