@@ -1,68 +1,123 @@
 import React from 'react';
 import GameModel from './models/GameModel';
+import NewPlayerComponent from './components/NewPlayerComponent';
 import NewGameComponent from './components/NewGameComponent';
 import GameListComponent from './components/GameListComponent';
+import PlayerMoveComponent from './components/PlayerMoveComponent';
 
 class App extends React.Component {
-    constructor(){
-      super();
+  constructor() {
+    super();
 
-      this.state = {
-        games: [],
-        currentGame: null
-      };
-    }
+    this.games = new GameModel();
+    this.games.subscribe(this.updateList.bind(this));
 
-    componentDidMount() {
-      this.games = new GameModel();
-      this.games.subscribe(this.updateList.bind(this));
+    this.state = {
+      games: [],
+      currentGame: null,
+      currentPlayer: null,
+      playerMove: ""
+    };
+  }
 
-    }
+  updateList() {
+    this.setState({
+      games: this.games.resources
+    });
 
-    updateList() {
-      this.setState({
-        games: this.games.resources
+    if (this.state.currentGame !== null) {
+      let component = this;
+      this.games.resources.map(function(game) {
+        if (game._id === component.state.currentGame._id) {
+          component.setState({
+            currentGame: game
+          });
+        }
       });
     }
+  }
 
-    createGame(newPlayer) {
-      this.games.addResource({
-        playerOne:newPlayer
-      });
-    }
+  setPlayer(player) {
+    this.setState({
+      currentPlayer: player
+    });
+  }
 
-    containerStyles() {
-      return {
-        width: "500px",
-        height: "500px",
-        margin: "auto"
+  createGame() {
+    this.games.addResource({
+      playerOne: this.state.currentPlayer
+    });
+  }
+
+  joinGame(game) {
+    console.log("Joining game...");
+    if (game.playerOne === this.state.currentPlayer || game.playerTwo === this.state.currentPlayer || game.playerTwo === null) {
+      if (game.playerOne !== this.state.currentPlayer && game.playerTwo !== this.state.currentPlayer) {
+        console.log("Joining game as player two...");
+        this.games.save(game, { playerTwo: this.state.currentPlayer });
       }
-    }
 
-    headerStyle(){
-      return {
-        textAlign: "center"
-      }
-    }
-
-    selectGame(gameId) {
-      this.games.getResource({ _id: gameId });
-      console.log(gameId);
       this.setState({
-        currentGame: gameId
+        currentGame: game
       });
+    } else {
+      window.alert("Can't touch this dung dung dung dung");
     }
+  }
 
-    render() {
-      console.log(this.state);
-      return (
-          <div style={this.containerStyles()}>
-            <h1 style={this.headerStyle()}>Rock Paper Scissors</h1>
-            <NewGameComponent onCreate={this.createGame.bind(this)}/>
-            <GameListComponent games={this.state.games} onSelect={this.selectGame.bind(this)}/>
+  containerStyles() {
+    return {
+      width: "500px",
+      height: "500px",
+      margin: "auto",
+    };
+  }
+
+  headerStyle() {
+    return {
+      textAlign: "center"
+    };
+  }
+
+  makeMove(move) {
+    console.log(move);
+    this.setState({
+      playerMove: move
+    });
+  }
+
+  render() {
+    console.log(this.state);
+    return (
+      <div style={this.containerStyles()}>
+        <h1 style={this.headerStyle()}>Rock Paper Scissors</h1>
+        { this.state.currentPlayer !== null &&
+          <p>Hi, {this.state.currentPlayer}</p> }
+
+        { this.state.currentPlayer === null &&
+          <NewPlayerComponent onCreate={this.setPlayer.bind(this)}/> }
+
+        { this.state.currentGame === null &&
+          <GameListComponent games={this.state.games} onSelect={this.joinGame.bind(this)}/> }
+
+        { this.state.currentPlayer && this.state.currentGame === null &&
+          <NewGameComponent onCreate={this.createGame.bind(this)}/> }
+
+        { this.state.currentGame !== null &&
+          <div className="game">
+          <p>Player one: {this.state.currentGame.playerOne}</p>
+          <p>Player two: {this.state.currentGame.playerTwo}</p>
+
+          <div>
+            <h2>{this.state.playerMove}</h2>
+            <PlayerMoveComponent move="Rock" onClick={this.makeMove.bind(this)} />
+            <PlayerMoveComponent move="Paper" onClick={this.makeMove.bind(this)} />
+            <PlayerMoveComponent move="Scissors" onClick={this.makeMove.bind(this)} />
           </div>
-      );
-    }
+        </div>}
+      </div>
+    );
+  }
 }
 
 export default App;

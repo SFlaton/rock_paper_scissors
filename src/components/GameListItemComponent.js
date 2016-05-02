@@ -5,12 +5,10 @@ class GameListItemComponent extends React.Component {
     this.props.onClick(this.props.game);
   }
 
-
   render() {
     return (
-      <li onClick={this.selectGame.bind(this)}>Game by {this.props.game.playerOne}</li>);
-
-    )
+      <li onClick={this.selectGame.bind(this)}>Game by {this.props.game.playerOne}</li>
+    );
   }
 }
 
